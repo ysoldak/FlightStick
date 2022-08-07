@@ -1,0 +1,44 @@
+name: Upload release artifacts
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    container: tinygo/tinygo-dev:latest
+    steps:
+
+    - name: Prepare
+      run: |
+        apt-get install -y make git
+
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Build XIAO BLE Sense binary
+      run: make TARGET=xiao-ble build
+
+    - name: Build Nano 33 BLE binary
+      run: make  TARGET=nano-33-ble-s140v6-uf2 build
+
+    - name: Upload XIAO BLE Sense binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        tag: ${{ github.ref }}
+        file: ./build/fs_xiao-ble_*.uf2
+        file_glob: true
+        asset_name: "fs_xiao-ble_$tag.uf2"
+        repo_token: ${{ github.token }}
+
+    - name: Upload Nano 33 BLE binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        tag: ${{ github.ref }}
+        file: ./build/fs_nano-33-ble_*.hex
+        file_glob: true
+        asset_name: "fs_nano-33-ble_$tag.hex"
+        repo_token: ${{ github.token }}

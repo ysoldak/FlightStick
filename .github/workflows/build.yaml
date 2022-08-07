@@ -1,0 +1,30 @@
+name: Build binary
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: tinygo/tinygo-dev:latest
+    steps:
+
+    - name: Prepare
+      run: |
+        apt-get install -y make git
+
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Build XIAO BLE Sense binary
+      run: make TARGET=xiao-ble build
+
+    - name: Build Nano 33 BLE binary
+      run: make TARGET=nano-33-ble-s140v6-uf2 build
