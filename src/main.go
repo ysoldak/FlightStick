@@ -7,6 +7,10 @@ import (
 
 var led = machine.LED_GREEN
 
+var controlPins = []machine.Pin{
+	machine.D4, // calibration: record pot middle positions
+}
+
 var potPins = []machine.ADC{
 	{Pin: machine.A0},
 	{Pin: machine.A1},
@@ -22,7 +26,9 @@ type AxisCalibration struct {
 	max uint16
 }
 
-var calibration = []AxisCalibration{}
+var calibration = []*AxisCalibration{}
+
+var controlDefaults = []bool{}
 
 // ----------------------------------------------------------------------------
 
@@ -30,8 +36,10 @@ func main() {
 
 	ledInit()
 	ppmInit()
+	controlInit()
 	potInit()
 
+	go listenControls()
 	go updateChannels()
 
 	for {
@@ -49,10 +57,31 @@ func ledInit() {
 	led.Configure(machine.PinConfig{Mode: machine.PinOutput})
 }
 
+func controlInit() {
+	for _, pin := range controlPins {
+		pin.Configure(machine.PinConfig{Mode: machine.PinInput})
+		controlDefaults = append(controlDefaults, pin.Get())
+	}
+}
+
 func potInit() {
 	for _, pin := range potPins {
 		pin.Configure(machine.ADCConfig{})
-		calibration = append(calibration, AxisCalibration{min: 10000, mid: pin.Get(), max: 60000})
+		calibration = append(calibration, &AxisCalibration{min: 10000, mid: pin.Get(), max: 60000})
+	}
+}
+
+// ----------------------------------------------------------------------------
+
+func listenControls() {
+	for {
+		// calibrate
+		if controlPins[0].Get() != controlDefaults[0] {
+			for i, c := range calibration {
+				c.mid = potPins[i].Get()
+			}
+		}
+		time.Sleep(50 * time.Millisecond)
 	}
 }
 
