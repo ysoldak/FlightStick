@@ -11,6 +11,13 @@ var controlPins = []machine.Pin{
 	machine.D4, // calibration: record pot middle positions
 }
 
+var buttonPins = []machine.Pin{
+	machine.D7,
+	machine.D8,
+	machine.D9,
+	machine.D10,
+}
+
 var potPins = []machine.ADC{
 	{Pin: machine.A0},
 	{Pin: machine.A1},
@@ -29,6 +36,7 @@ type AxisCalibration struct {
 var calibration = []*AxisCalibration{}
 
 var controlDefaults = []bool{}
+var buttonDefaults = []bool{}
 
 // ----------------------------------------------------------------------------
 
@@ -37,6 +45,7 @@ func main() {
 	ledInit()
 	ppmInit()
 	controlInit()
+	buttonInit()
 	potInit()
 
 	go listenControls()
@@ -61,6 +70,13 @@ func controlInit() {
 	for _, pin := range controlPins {
 		pin.Configure(machine.PinConfig{Mode: machine.PinInput})
 		controlDefaults = append(controlDefaults, pin.Get())
+	}
+}
+
+func buttonInit() {
+	for _, pin := range buttonPins {
+		pin.Configure(machine.PinConfig{Mode: machine.PinInput})
+		buttonDefaults = append(buttonDefaults, pin.Get())
 	}
 }
 
@@ -92,6 +108,9 @@ func updateChannels() {
 		for i, pot := range potPins {
 			channels[i] = potToChannel(i, pot)
 		}
+		for i, button := range buttonPins {
+			channels[4+i] = buttonToChannel(i, button)
+		}
 		time.Sleep(50 * time.Millisecond)
 	}
 }
@@ -113,4 +132,12 @@ func potToChannel(i int, pot machine.ADC) uint16 {
 		return 1500 + uint16(float64(value-calibration[i].mid)/float64(potRange)*512)
 	}
 	return 1500
+}
+
+func buttonToChannel(i int, button machine.Pin) uint16 {
+	value := button.Get()
+	if value != buttonDefaults[i] {
+		return 2021
+	}
+	return 988
 }
