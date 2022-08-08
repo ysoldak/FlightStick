@@ -38,7 +38,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         tag: ${{ github.ref }}
-        file: ./build/fs_nano-33-ble_*.hex
+        file: ./build/fs_nano-33-ble_*.uf2
         file_glob: true
-        asset_name: "fs_nano-33-ble_$tag.hex"
+        asset_name: "fs_nano-33-ble_$tag.uf2"
         repo_token: ${{ github.token }}
