@@ -27,6 +27,8 @@ var potPins = []machine.ADC{
 	{Pin: machine.A3},
 }
 
+const lagFilterBeta = 50
+
 var channels = []uint16{1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500}
 
 type AxisCalibration struct {
@@ -108,7 +110,7 @@ func listenControls() {
 func updateChannels() {
 	for {
 		for i, pot := range potPins {
-			channels[i] = potToChannel(i, pot)
+			channels[i] = uint16((uint32(potToChannel(i, pot))*lagFilterBeta + uint32(channels[i])*(100-lagFilterBeta)) / 100)
 		}
 		for i, button := range buttonPins {
 			channels[4+i] = buttonToChannel(i, button)
