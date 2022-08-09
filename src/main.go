@@ -10,7 +10,7 @@ var Version = "0.0.0"
 var led = machine.LED_GREEN
 
 var controlPins = []machine.Pin{
-	machine.D4, // calibration: record pot middle positions
+	machine.D4, // calibration: record pot center positions
 }
 
 var buttonPins = []machine.Pin{
@@ -28,6 +28,11 @@ var potPins = []machine.ADC{
 }
 
 var channels = []uint16{1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500}
+
+// amount of microseconds around 1500 result in 1500 returned
+// this removes jitter around mid stick position and helps with INAV launch mode
+// TODO calibrate for jitter automatically on mid-stick calibration
+const channelCenterTolerance = 20
 
 type AxisCalibration struct {
 	min uint16
@@ -109,6 +114,9 @@ func updateChannels() {
 	for {
 		for i, pot := range potPins {
 			channels[i] = potToChannel(i, pot)
+			if 1500-channelCenterTolerance < channels[i] && channels[i] < 1500+channelCenterTolerance {
+				channels[i] = 1500
+			}
 		}
 		for i, button := range buttonPins {
 			channels[4+i] = buttonToChannel(i, button)
