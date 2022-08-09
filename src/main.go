@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+var Version = "0.0.0"
+
 var led = machine.LED_GREEN
 
 var controlPins = []machine.Pin{

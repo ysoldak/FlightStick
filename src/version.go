@@ -1,2 +1,0 @@
-package main
-const version = ""

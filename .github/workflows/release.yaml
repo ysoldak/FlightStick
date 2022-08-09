@@ -23,7 +23,7 @@ jobs:
       run: make TARGET=xiao-ble build
 
     - name: Build Nano 33 BLE binary
-      run: make  TARGET=nano-33-ble-s140v6-uf2 build
+      run: make TARGET=nano-33-ble-s140v6-uf2 build
 
     - name: Upload XIAO BLE Sense binaries to release
       uses: svenstaro/upload-release-action@v2
